@@ -1,0 +1,2 @@
+# Numericne_in_statisticne_metode
+Numerično računanje matematičnih problemov
