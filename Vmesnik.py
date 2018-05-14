@@ -2,6 +2,15 @@ from tkinter import *
 import numpy as np
 from math import *
 
+def bisekcija(f, low, high, n):
+    for i in range(n):
+        midpoint = (low + high) / 2.0
+        if f(low)*f(midpoint) > 0:
+            low = midpoint
+        else:
+            high = midpoint
+
+    return midpoint
 
 class Metode:
     def __init__(self, master):
@@ -13,9 +22,9 @@ class Metode:
         menuMetode = Menu(menu)
         menuMetode = Menu(menu, tearoff=0)
         menu.add_cascade(label="Metode", menu=menuMetode)
-        menuMetode.add_command(label="Bisekcija", command=self.PodatkiBisekcija)
-        menuMetode.add_command(label="LU razcep DP", command=self.VelikostMatrikeDP)
+        menuMetode.add_command(label="Bisekcija", command=self.stopnja_polinoma)
         menuMetode.add_command(label="LU razcep BP", command=self.VelikostMatrikeBP)
+        menuMetode.add_command(label="LU razcep DP", command=self.VelikostMatrikeDP)
         menuMetode.add_command(label="QR razcep", command=self.VelikostMatrikeQR)
         menuMetode.add_command(label="Cholesky", command=self.VelikostMatrikeCh)
 
@@ -23,24 +32,67 @@ class Metode:
         menu.add_cascade(label="Končaj", menu=menuKoncaj)
         menuKoncaj.add_command(label="Quit", command=master.destroy)
 
+    def stopnja_polinoma(self):
+        if self.okno != None:
+            self.okno.pack_forget()
+        self.okno = Frame(self.root)
+        self.okno.pack()
+        self.stPoli = Entry(self.okno)
+        self.stPoli.grid(row=1, column=2)
+        Label(self.okno, text="Stopnja polinoma:").grid(row=1, column=1)
+        self.gumb = Button(self.okno, text='Potrdi', command=self.PodatkiBisekcija).grid(row=2,column=1)
+
+
     def PodatkiBisekcija(self):
+        '''ustvari okno nxn, kamor vnesemo podatke'''
+        if self.okno != None:
+            self.okno.pack_forget()
+        self.okno = Frame(self.root)
+        self.okno.pack()
+        if self.gumb != None:
+            self.gumb.destroy()
+        self.st = int(self.stPoli.get())+1
+        self.A = [0] * (self.st)
+        for i in range(self.st):
+            self.A[i] = (Entry(self.okno))
+            self.A[i].grid(row=i + 1, column=2)
+            Label(self.okno, text='x^' + str(i)).grid(row=i + 1, column=1)
+
+        self.spodnja_meja = Entry(self.okno)
+        self.spodnja_meja.grid(row=self.st+1, column=2)
+        self.zgornja_meja = Entry(self.okno)
+        self.zgornja_meja.grid(row=self.st+2, column=2)
+        Label(self.okno, text="Spodnja meja").grid(row=self.st+1, column=1)
+        Label(self.okno, text="Zgornja meja").grid(row=self.st+2, column=1)
+
+        self.gumb = Button(self.okno, text='Potrdi', command=self.bisekcija).grid(row=self.st+3, column=1)
         okno = Frame(root)
         okno.pack()
-        # Napisi
-        Label(okno, text="Parameter 1").grid(row=1, column=1)
-        Label(okno, text="Parameter 2").grid(row=2, column=1)
-        Label(okno, text="Parameter 3").grid(row=3, column=1)
-        Label(okno, text="Parameter 4").grid(row=4, column=1)
 
         # Vnosna polja
-        parametri = Entry(okno)
-        parametri.grid(row=1, column=2)
-        polozaj_x = Entry(okno)
-        polozaj_x.grid(row=2, column=2)
-        polozaj_y = Entry(okno)
-        polozaj_y.grid(row=3, column=2)
-        velikost = Entry(okno)
-        velikost.grid(row=4, column=2)
+
+
+
+
+    def bisekcija(self):
+        if self.okno != None:
+            self.okno.pack_forget()
+        self.okno = Frame(self.root)
+        self.okno.pack()
+        if self.gumb!=None:
+            self.gumb.destroy()
+        st = self.st
+        f = lambda x : x*0
+        for i in range(st):
+            f += lambda x: self.A[i]*x**i
+
+        print(f)
+        sp = int(self.spodnja_meja.get())
+        zg = int(self.zgornja_meja.get())
+        Label(self.okno, text= 'Ničla funkcije je:\n' +  str(bisekcija(f,sp,zg,1000)), font=('Helvetica', 16)).grid(row=2,
+                                                                                                             column=1)
+        #print(bisekcija(p, -10, 10, 1e-03, 1000))
+
 
     # ************** LU razcep brez pivotiranja***************
     # ---------------------------------------------------------------------------------------------------------
@@ -163,7 +215,7 @@ class Metode:
         return None
 
     def LU_razcep_dp(self):
-        '''vzame podatke iz PodatkiMatrika in izvede LUbp razcep, ki ga nato izpiše'''
+        '''vzame podatke iz PodatkiMatrika in izvede LUdp razcep, ki ga nato izpiše'''
         if self.okno != None:
             self.okno.pack_forget()
         self.okno = Frame(self.root)
@@ -239,6 +291,9 @@ class Metode:
             self.gumb.destroy()
         vrstice = int(self.vrstice.get())
         stolpci = int(self.stolpci.get())
+        if vrstice < stolpci:
+            Label(self.okno, text='QR razcep je izvedljiv za matrike, ki imajo najmanj toliko vrstic kot stolpcev', font=("Helvetica", 16)).grid(row=1, column=1)
+            return None
         self.A = [[] for x in range(vrstice)]
         for i in range(vrstice):
             for j in range(stolpci):
@@ -345,12 +400,15 @@ class Metode:
         for i in range(vrstice):
             for j in range(stolpci):
                 self.B[i].append(float(self.A[i][j].get()))
-        for i in range(vrstice):
-            for j in range(stolpci):
-                self.B[i].append(float(self.A[i][j].get()))
         A = self.B
-        print(A, np.transpose(A))
-
+        if not np.array_equal(A, np.transpose(A)):
+            Label(self.okno, text='Matrika ni simetrična',
+                  font=("Helvetica", 16)).grid(row=1, column=1)
+            return None
+        if not np.all(np.linalg.eigvals(A) > 0):
+            Label(self.okno, text='Matrika ni pozitivno definitna',
+                  font=("Helvetica", 16)).grid(row=1, column=1)
+            return None
         L = [[0.0] * len(A) for _ in range(len(A))]
         for i, (Ai, Li) in enumerate(zip(A, L)):
             for j, Lj in enumerate(L[:i + 1]):
