@@ -22,7 +22,7 @@ class Metode:
         menuMetode = Menu(menu)
         menuMetode = Menu(menu, tearoff=0)
         menu.add_cascade(label="Metode", menu=menuMetode)
-        menuMetode.add_command(label="Bisekcija", command=self.stopnja_polinoma)
+        menuMetode.add_command(label="Bisekcija", command=self.PodatkiBisekcija)
         menuMetode.add_command(label="LU razcep BP", command=self.VelikostMatrikeBP)
         menuMetode.add_command(label="LU razcep DP", command=self.VelikostMatrikeDP)
         menuMetode.add_command(label="QR razcep", command=self.VelikostMatrikeQR)
@@ -32,40 +32,45 @@ class Metode:
         menu.add_cascade(label="Končaj", menu=menuKoncaj)
         menuKoncaj.add_command(label="Quit", command=master.destroy)
 
-    def stopnja_polinoma(self):
-        if self.okno != None:
-            self.okno.pack_forget()
-        self.okno = Frame(self.root)
-        self.okno.pack()
-        self.stPoli = Entry(self.okno)
-        self.stPoli.grid(row=1, column=2)
-        Label(self.okno, text="Stopnja polinoma:").grid(row=1, column=1)
-        self.gumb = Button(self.okno, text='Potrdi', command=self.PodatkiBisekcija).grid(row=2,column=1)
-
 
     def PodatkiBisekcija(self):
-        '''ustvari okno nxn, kamor vnesemo podatke'''
+        '''ustvari okna za vnos podatkov'''
         if self.okno != None:
             self.okno.pack_forget()
         self.okno = Frame(self.root)
         self.okno.pack()
-        if self.gumb != None:
-            self.gumb.destroy()
-        self.st = int(self.stPoli.get())+1
-        self.A = [0] * (self.st)
-        for i in range(self.st):
-            self.A[i] = (Entry(self.okno))
-            self.A[i].grid(row=i + 1, column=2)
-            Label(self.okno, text='x^' + str(i)).grid(row=i + 1, column=1)
+        self.gumb = Button(self.okno, text='Potrdi', command=self.bisekcija).grid(row=7,column=2)
+        
+        self.spodnja_meja = Entry(self.okno)
+        self.spodnja_meja.grid(row=1, column=2)
+        self.zgornja_meja = Entry(self.okno)
+        self.zgornja_meja.grid(row=2, column=2)
+        
+        self.x3 = Entry(self.okno)
+        self.x3.grid(row=3, column=2)
+        self.x2 = Entry(self.okno)
+        self.x2.grid(row=4, column=2)
+        self.x1 = Entry(self.okno)
+        self.x1.grid(row=5, column=2)
+        self.x0 = Entry(self.okno)
+        self.x0.grid(row=6, column=2)
+        
+        Label(self.okno, text="Spodnja meja").grid(row=1, column=1)
+        Label(self.okno, text="Zgornja meja").grid(row=2, column=1)
+        
+        Label(self.okno, text="x^3").grid(row=3, column=1)
+        Label(self.okno, text="x^2").grid(row=4, column=1)
+        Label(self.okno, text="x^1").grid(row=5, column=1)
+        Label(self.okno, text="x^0").grid(row=6, column=1)
+        
 
         self.spodnja_meja = Entry(self.okno)
-        self.spodnja_meja.grid(row=self.st+1, column=2)
+        self.spodnja_meja.grid(row=1, column=2)
         self.zgornja_meja = Entry(self.okno)
-        self.zgornja_meja.grid(row=self.st+2, column=2)
-        Label(self.okno, text="Spodnja meja").grid(row=self.st+1, column=1)
-        Label(self.okno, text="Zgornja meja").grid(row=self.st+2, column=1)
+        self.zgornja_meja.grid(row=2, column=2)
+        Label(self.okno, text="Spodnja meja").grid(row=1, column=1)
+        Label(self.okno, text="Zgornja meja").grid(row=2, column=1)
 
-        self.gumb = Button(self.okno, text='Potrdi', command=self.bisekcija).grid(row=self.st+3, column=1)
         okno = Frame(root)
         okno.pack()
 
@@ -81,12 +86,11 @@ class Metode:
         self.okno.pack()
         if self.gumb!=None:
             self.gumb.destroy()
-        st = self.st
-        f = lambda x : x*0
-        for i in range(st):
-            f += lambda x: self.A[i]*x**i
-
-        print(f)
+        x3 = int(self.x3.get())
+        x2 = int(self.x2.get())
+        x1 = int(self.x1.get())
+        x0 = int(self.x0.get())
+        f = lambda x : x3*x**3 + x2*x**2 + x1*x**1 + x0
         sp = int(self.spodnja_meja.get())
         zg = int(self.zgornja_meja.get())
         Label(self.okno, text= 'Ničla funkcije je:\n' +  str(bisekcija(f,sp,zg,1000)), font=('Helvetica', 16)).grid(row=2,
